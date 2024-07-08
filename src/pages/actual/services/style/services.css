@@ -1,0 +1,29 @@
+.delete-icon {
+    display: none !important;
+
+    transition: 0.2s;
+    cursor: pointer;
+background-color: red;
+padding: 10px;
+border-radius: 100px;
+display: flex;
+justify-content: center;
+align-items: center;
+height: 39px;
+width:  35px;
+}
+
+.myservicecard:hover .delete-icon {
+    cursor: pointer;
+    background-color: red;
+    padding: 12px;
+    border-radius: 100px;
+    display: flex !important;
+    justify-content: center !important; 
+    align-items: center !important;
+    height: 39px;
+    width:  35px;
+    
+
+    display: inherit !important; 
+}
