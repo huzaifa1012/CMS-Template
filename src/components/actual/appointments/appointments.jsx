@@ -91,7 +91,7 @@ const AppointmentsTable = () => {
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <div className="max-w-full overflow-x-auto">
-        <button onClick={() => addData("appointments", {
+        {/* <button onClick={() => addData("appointments", {
           additionalnotes: "Required Foot scrub in traditional style",
           appointmentdate: new Date(),
           appointmentstatus: "booked",
@@ -103,7 +103,8 @@ const AppointmentsTable = () => {
         }
           , fetchedData()
 
-        )}>Click Me to add a dummy  appointment </button>
+        )}>
+          Click Me to add a dummy  appointment </button> */}
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-gray-2 text-left dark:bg-meta-4">

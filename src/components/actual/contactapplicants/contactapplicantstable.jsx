@@ -51,6 +51,7 @@ export default function Contactapplicantstable() {
     }
 
     return (
+        <div className='overflow-x-auto'>
         <table className="w-full table-auto">
             <thead>
                 <tr className="bg-gray-2 text-left dark:bg-meta-4">
@@ -176,5 +177,6 @@ export default function Contactapplicantstable() {
                     )}
             </tbody>
         </table>
+        </div>
     )
 }

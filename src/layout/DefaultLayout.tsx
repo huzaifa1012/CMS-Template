@@ -7,15 +7,16 @@ interface DefaultLayoutProps {
   showSidebar?: boolean;
 }
 
-const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children, showSidebar = true }) => {
+const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const loggedin = localStorage.getItem("loggedin") === "true";
 
   return (
     <div className="dark:bg-boxdark-2 dark:text-bodydark">
       {/* <!-- ===== Page Wrapper Start ===== --> */}
       <div className="flex h-screen overflow-hidden">
         {/* <!-- ===== Sidebar Start ===== --> */}
-        {showSidebar && <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />}
+        {loggedin && <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />}
         {/* <!-- ===== Sidebar End ===== --> */}
 
         {/* <!-- ===== Content Area Start ===== --> */}

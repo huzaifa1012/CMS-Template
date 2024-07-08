@@ -46,7 +46,7 @@ const SignIn = () => {
 
 
   return (
-    <DefaultLayout showSidebar={false} >
+    <DefaultLayout >
       <Breadcrumb pageName="Sign In" />
 
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
