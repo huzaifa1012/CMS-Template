@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import Breadcrumb from '../../../components/all/Breadcrumbs/Breadcrumb';
 import { addData } from '../../../util_functions/add_data';
 import uploadImage from '../../../util_functions/upload_single';
-import deleteImageByUrl from '../../../util_functions/delete_single';
 import DefaultLayout from '../../../layout/DefaultLayout';
 import Swal from 'sweetalert2';
 import { getData } from '../../../util_functions/get_data';
 import './style/deleted-services.css'
 import { updateData } from '../../../util_functions/update_data';
+import { deleteDoc } from '../../../util_functions/delete_data';
 const DeletedServices = () => {
   const [values, setValues] = useState({});
   const [imageSrc, setImageSrc] = useState(null);
@@ -87,6 +86,28 @@ const DeletedServices = () => {
   };
   // Old end
 
+  const clearAll = async (uid) => {
+    Swal.fire({
+      title: "Clear All ?",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Clear",
+      confirmButtonColor: 'green',
+      cancelButtonColor: "gray",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteDoc("services", { servicestatus: "deleted" }); // Ensure deleteDoc is awaited
+          await fetchedData(); // Ensure fetchedData is awaited
+          Swal.fire("Trash Cleaned!", "All deleted service is now removed ", "success");
+        } catch (error) {
+          console.error("Error deleting document: ", error);
+          Swal.fire("Error!", "Could not delete the services.", "error");
+        }
+      } else if (result.isDenied) {
+        Swal.fire("Faild to delete", "", "info");
+      }
+    });
+  }
   const askDelete = async (uid) => {
     Swal.fire({
       title: "Restore this service?",
@@ -114,6 +135,8 @@ const DeletedServices = () => {
   return (
     <DefaultLayout>
       <div className="mx-auto max-w-270">
+
+        <button className='primary-btn btn' onClick={clearAll} >Clear All</button>
         <Breadcrumb pageName="Deleted Service" />
         <div className='flex gap-10 flex-wrap'>
 

@@ -206,7 +206,7 @@ const AddServices = () => {
                         name="servicedetail"
                         id="servicedetail"
                         value={values?.servicedetail}
-
+                        maxLength={200}
                         rows={6}
                         onChange={(e) => handleInputChange(e)}
                         placeholder="Service will include ..."
