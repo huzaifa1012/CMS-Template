@@ -20,7 +20,7 @@ import Appointments from './pages/actual/appointments/appointments';
 import CompletedAppointments from './pages/actual/appointments/completed-appointments';
 import CancelleddAppointments from './pages/actual/appointments/cancelled-appointments';
 import AddServices from './pages/actual/services/add-services';
-import Services from './pages/actual/services/Services';
+import Services from './pages/actual/services/services';
 import DeletedServices from './pages/actual/services/deleted-services';
 import ContactSubmission from './pages/actual/contactssubmission/ContactsSubmission';
 
