@@ -79,6 +79,9 @@ const CompletedAppointmentsComponent = () => {
                             <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
                                 Customer
                             </th>
+                            <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                                Customer Phone
+                            </th>
                             <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
                                 Booking date
                             </th>
@@ -126,6 +129,9 @@ const CompletedAppointmentsComponent = () => {
                                                 <p className="text-sm">
                                                     {val?.customeremail}
                                                 </p>
+                                            </td>
+
+                                            <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                                                 <p className="text-sm">
                                                     {val?.customerphone}
                                                 </p>

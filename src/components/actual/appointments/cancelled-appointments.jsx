@@ -82,6 +82,9 @@ const CancelledAppointmentsComponent = () => {
                             <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
                                 Customer
                             </th>
+                            <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                                Customer Phone
+                            </th>
                             <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
                                 Booking date
                             </th>
@@ -134,10 +137,13 @@ const CancelledAppointmentsComponent = () => {
                                         <p className="text-sm">
                                             {val?.customeremail}
                                         </p>
-                                        <p className="text-sm">
-                                            {val?.customerphone}
-                                        </p>
-                                    </td>
+
+                                            </td>
+                                            <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                                                <p className="text-sm">
+                                                    {val?.customerphone}
+                                                </p>
+                                            </td>
                                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                         <p className="text-black dark:text-white">
                                             {val?.appointmentdate ? formattedDate(val.appointmentdate) : 'No date available'}
