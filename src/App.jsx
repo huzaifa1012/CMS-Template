@@ -21,6 +21,7 @@ import CompletedAppointments from './pages/actual/appointments/completed-appoint
 import CancelleddAppointments from './pages/actual/appointments/cancelled-appointments';
 import AddServices from './pages/actual/services/add-services';
 import Services from './pages/actual/services/services';
+import Staff from './pages/actual/miscellaneous/staff';
 import DeletedServices from './pages/actual/services/deleted-services';
 import ContactSubmission from './pages/actual/contactssubmission/ContactsSubmission';
 
@@ -118,6 +119,17 @@ function App() {
               </>
             }
           />
+
+            {/* Miscellaneous */}
+            <Route
+              path="/staff"
+              element={
+                <>
+                  <PageTitle title="Staff | Imperial Look " />
+                  <Staff />
+                </>
+              }
+            />
           {/* <Route
           path="/profile"
           element={

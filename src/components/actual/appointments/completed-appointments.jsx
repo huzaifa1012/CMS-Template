@@ -1,17 +1,46 @@
 import { getData } from '../../../util_functions/get_data.jsx';
-import { addData } from '../../../util_functions/add_data.jsx';
 import { deleteDoc } from '../../../util_functions/delete_data.jsx';
 import { formattedDate } from '../../../util_functions/formateDate.jsx';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2'
-import { Timestamp } from 'firebase/firestore';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 
 const CompletedAppointmentsComponent = () => {
     const [expandedRows, setExpandedRows] = useState([]);
     const [appointments, setAppointment] = useState([])
     const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState("today"); // Default filter
+
+
+
+    const filterAppointments = (appointments) => {
+        const today = new Date();
+        return appointments.filter((appointment) => {
+            // Convert Firestore Timestamp to JavaScript Date
+            const appointmentDate = new Date(appointment.completiondate.seconds * 1000);
+
+            switch (filter) {
+                case "today":
+                    return appointmentDate.toDateString() === today.toDateString();
+                case "thisWeek":
+                    const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+                    const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+                    return appointmentDate >= startOfWeek && appointmentDate <= endOfWeek;
+                case "thisMonth":
+                    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    return appointmentDate >= startOfMonth && appointmentDate <= endOfMonth;
+                case "previousMonth":
+                    const startOfPrevMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                    const endOfPrevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+                    return appointmentDate >= startOfPrevMonth && appointmentDate <= endOfPrevMonth;
+                default:
+                    return true;
+            }
+        });
+    };
 
 
 
@@ -19,8 +48,10 @@ const CompletedAppointmentsComponent = () => {
         try {
             setLoading(true)
             const data = await getData('appointments', { appointmentstatus: "completed" });
-            setAppointment(data)
-            console.log("state", appointments)
+            const filteredAppointments = filterAppointments(data); // Filter the data
+            console.log("filteredAppointments", filteredAppointments)
+            setAppointment(filteredAppointments)
+            console.log("state", data)
             setLoading(false)
         } catch (error) {
             setLoading(false)
@@ -32,7 +63,7 @@ const CompletedAppointmentsComponent = () => {
 
     useEffect(() => {
         fetchedData()
-    }, {})
+    }, [filter])
 
     const askDelete = async (uid) => {
         Swal.fire({
@@ -57,8 +88,6 @@ const CompletedAppointmentsComponent = () => {
         });
     }
 
-
-
     const handleRowClick = (index) => {
         if (expandedRows.includes(index)) {
             setExpandedRows(expandedRows.filter((i) => i !== index));
@@ -67,9 +96,113 @@ const CompletedAppointmentsComponent = () => {
         }
     };
 
+
+    const exportToExcel = async () => {
+        // Prepare your data
+        const data = appointments.map(val => ({
+            Service: val?.servicename,
+            Customer: val?.customername,
+            CustomerPhone: val?.customerphone,
+            BookingDate: val?.appointmentdate ? formattedDate(val.appointmentdate) : 'No date available',
+            CompletionDate: val?.completiondate ? formattedDate(val.completiondate) : 'No date available',
+            ServiceType: val?.servicetype,
+            ServicePerson: val?.serviceby,
+            TotalCost: val?.appointmentfinalprice,
+            Status: val?.appointmentstatus,
+        }));
+
+        // Calculate the total amount of all TotalCost, ensuring that the values are numbers
+        const totalAmount = appointments.reduce((sum, val) => {
+            const price = parseFloat(val?.appointmentfinalprice) || 0; // Convert to number, default to 0 if NaN
+            return sum + price;
+        }, 0);
+        console.log("totalAmount", totalAmount)
+
+        // Create a custom header with styling
+        const header = [
+            { A: 'Imperial Look Salon - Appointment Report' },
+            { A: 'Generated on:', B: new Date().toLocaleDateString() },
+            { A: 'Imperial Look Salon - Appointment Report', B: "" },
+            { A: 'Total Cost', B: totalAmount },
+            {}
+        ];
+
+        // Convert the header array to a worksheet
+        const headerWs = XLSX.utils.json_to_sheet(header, { skipHeader: true });
+
+        // Merge cells for the title and total amount (spanning columns A to H)
+        headerWs['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } }, // Merge title row
+            { s: { r: 2, c: 0 }, e: { r: 2, c: 7 } }  // Merge total amount row
+        ];
+
+        // Apply basic styling to the header (optional)
+        const headerStyle = {
+            font: { bold: true, sz: 14 },
+            alignment: { horizontal: 'center' },
+        };
+
+        // Apply style to title and total amount cells
+        const titleCellRef = XLSX.utils.encode_cell({ r: 0, c: 0 });
+        const totalAmountCellRef = XLSX.utils.encode_cell({ r: 2, c: 0 });
+
+        headerWs[titleCellRef].s = headerStyle;
+        headerWs[totalAmountCellRef].s = { ...headerStyle, font: { bold: true, sz: 12, color: { rgb: "FF0000" } } }; // Total amount in red
+
+        // Continue with adding your data below the header (starting from the 5th row)
+        const dataWs = XLSX.utils.json_to_sheet(data, { origin: 4 });
+
+        // Merge the header and data worksheets
+        const ws = XLSX.utils.sheet_add_json(headerWs, data, { origin: -1 });
+
+        // Adjust column widths (optional)
+        ws['!cols'] = [
+            { wch: 20 }, // Service
+            { wch: 20 }, // Customer
+            { wch: 15 }, // CustomerPhone
+            { wch: 25 }, // BookingDate
+            { wch: 25 }, // CompletedDate
+            { wch: 20 }, // ServiceType
+            { wch: 20 }, // ServicePerson
+            { wch: 15 }, // TotalCost
+            { wch: 15 }, // Status
+        ];
+
+        // Create a new workbook
+        const wb = XLSX.utils.book_new();
+
+        // Append the worksheet to the workbook
+        XLSX.utils.book_append_sheet(wb, ws, 'Appointment Report');
+
+        // Generate an Excel file and trigger a download
+        XLSX.writeFile(wb, 'Appointment_Report.xlsx');
+    };
+
     return (
         <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+            <div className='flex justify-between'>
+                <button
+                    onClick={exportToExcel}
+                    className="cursor-pointer mb-4 p-2 bg-blue-500 text-white rounded"
+                >
+                    Export to Excel
+                </button>
+
+                <select
+                    className="mb-4 p-2 cursor-pointer bg-white-500 text rounded"
+
+                    value={filter} onChange={(e) => setFilter(e.target.value)}>
+                    <option value="today">Today</option>
+                    <option value="thisWeek">This Week</option>
+                    <option value="thisMonth">This Month</option>
+                    <option value="previousMonth">Previous Month</option>
+                </select>
+            </div>
             <div className="max-w-full overflow-x-auto">
+
+
+
+
                 <table className="w-full table-auto">
                     <thead>
                         <tr className="bg-gray-2 text-left dark:bg-meta-4">
@@ -86,7 +219,16 @@ const CompletedAppointmentsComponent = () => {
                                 Booking date
                             </th>
                             <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
+                                Completed On
+                            </th>
+                            <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
                                 Service Type
+                            </th>
+                            <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
+                                Service Person
+                            </th>
+                            <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
+                                Total Cost
                             </th>
                             <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                                 Status
@@ -144,7 +286,25 @@ const CompletedAppointmentsComponent = () => {
                                             </td>
                                             <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                                 <p className="text-black dark:text-white">
+                                                    {val?.completiondate ? formattedDate(val.completiondate) : 'No date available'}
+
+                                                </p>
+                                            </td>
+                                            <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                                <p className="text-black dark:text-white">
                                                     {val?.servicetype}
+
+                                                </p>
+                                            </td>
+                                            <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                                <p className="text-black dark:text-white">
+                                                    {val?.serviceby}
+
+                                                </p>
+                                            </td>
+                                            <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                                <p className="text-black dark:text-white">
+                                                    {val?.appointmentfinalprice && `${val?.appointmentfinalprice}`}
 
                                                 </p>
                                             </td>

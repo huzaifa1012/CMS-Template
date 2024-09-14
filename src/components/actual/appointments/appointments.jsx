@@ -7,15 +7,24 @@ import { useState } from 'react';
 import Swal from 'sweetalert2'
 import { Timestamp } from 'firebase/firestore';
 import { updateData } from '../../../util_functions/update_data.jsx';
-
+import CompletionModal from "./completionModal.jsx"
 
 const AppointmentsTable = () => {
   const [expandedRows, setExpandedRows] = useState([]);
   const [appointments, setAppointment] = useState([])
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  // Completion Modal
+  const [selectedAppointment, setSelectedAppointment] = useState();
 
 
+  const toggleModal = () => {
+    setModalOpen(!modalOpen);
+  };
+  const onSaved = async () => {
+    await fetchedData()
 
+  }
 
   const fetchedData = async () => {
     try {
@@ -45,9 +54,8 @@ const AppointmentsTable = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          // await deleteDoc("appointments", { uid: uid }); // Ensure deleteDoc is awaited
-          await updateData("appointments", { uid: uid }, { appointmentstatus: "cancelled" }); // Ensure deleteDoc is awaited
-          await fetchedData(); // Ensure fetchedData is awaited
+          await updateData("appointments", { uid: uid }, { appointmentstatus: "cancelled" });
+          await fetchedData(); 
           Swal.fire("Cancelled!", "Appointment Cancelled Successfuly", "success");
         } catch (error) {
           console.error("Error deleting document: ", error);
@@ -58,32 +66,6 @@ const AppointmentsTable = () => {
       }
     });
   }
-  const completeAppointment = async (uid) => {
-    Swal.fire({
-      title: "Appointment Completed",
-      showCancelButton: true,
-      confirmButtonText: "Yes",
-      confirmButtonColor: 'green',
-      cancelButtonText: "No",
-      cancelButtonColor: "gray",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          // await deleteDoc("appointments", { uid: uid }); // Ensure deleteDoc is awaited
-          await updateData("appointments", { uid: uid }, { appointmentstatus: "completed" }); // Ensure deleteDoc is awaited
-          await fetchedData(); // Ensure fetchedData is awaited
-          Swal.fire("Marked As Completed!", "Appointment is marked as Successfuly completed", "success");
-        } catch (error) {
-          console.error("Error deleting document: ", error);
-          Swal.fire("Error!", "Could not delete the document.", "error");
-        }
-      } else if (result.isDenied) {
-        Swal.fire("Changes are not saved", "", "info");
-      }
-    });
-  }
-
-
 
 
   const handleRowClick = (index) => {
@@ -97,6 +79,12 @@ const AppointmentsTable = () => {
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <div className="max-w-full overflow-x-auto">
+        <CompletionModal
+          isOpen={modalOpen}
+          toggle={toggleModal}
+          appointmentData={selectedAppointment}
+          onSave={onSaved}
+        />
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-gray-2 text-left dark:bg-meta-4">
@@ -276,8 +264,8 @@ const AppointmentsTable = () => {
                         expandedRows.includes(key) && (<tr className='border-b border-[#eee] px-4 pl-9 dark:border-strokedark xl:pl-11'>
                           <td colSpan="5" className="py-5 px-4 bg-gray-100 dark:bg-gray-800 relative">
                             <div className='absolute top-0 right-0 p-10 px-15'>
-                              <button onClick={() => completeAppointment(val?.uid)} className='bg-green-700 text-white font-bold py-2 px-4 rounded hover:bg-green-700'>
-                                Mark Completed</button>
+                              <button onClick={() => { toggleModal(); setSelectedAppointment(val) }} className='bg-green-700 text-white font-bold py-2 px-4 rounded hover:bg-green-700'>
+                                Mark Completeds</button>
                             </div>
                             <p className="text-black dark:text-white pb-10 px-5">
                               <strong>Additional Notes:</strong> <br /> {val.additionalnotes}

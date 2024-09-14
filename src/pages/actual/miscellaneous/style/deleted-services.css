@@ -1,0 +1,29 @@
+.restore-icon {
+    display: none !important;
+
+    transition: 0.2s;
+    cursor: pointer;
+/* background-color: green; */
+padding: 10px;
+border-radius: 100px;
+display: flex;
+justify-content: center;
+align-items: center;
+height: 39px;
+width:  35px;
+}
+
+.myservicecard:hover .restore-icon {
+    cursor: pointer;
+    background-color: rgb(0, 182, 0);
+    padding: 12px;
+    border-radius: 100px;
+    display: flex !important;
+    justify-content: center !important; 
+    align-items: center !important;
+    height: 39px;
+    width:  35px;
+    
+
+    display: inherit !important; 
+}
